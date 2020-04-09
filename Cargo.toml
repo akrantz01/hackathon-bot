@@ -8,7 +8,4 @@ edition = "2018"
 dotenv = "^0.15.0"
 env_logger = "^0.7"
 log = "^0.4"
-
-[dependencies.serenity]
-features = ["framework", "standard_framework", "rustls_backend"]
-version = "^0.8"
+serenity = "^0.8"
