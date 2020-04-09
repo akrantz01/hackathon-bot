@@ -1,3 +1,7 @@
+use dotenv::dotenv;
+
 fn main() {
-    println!("Hello, world!");
+    // Load configuration from a .env file
+    // See .env.example for the required fields
+    dotenv().ok();
 }
