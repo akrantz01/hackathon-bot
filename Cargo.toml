@@ -6,7 +6,8 @@ edition = "2018"
 
 [dependencies]
 dotenv = "^0.15.0"
-leg = "^0.4"
+env_logger = "^0.7"
+log = "^0.4"
 
 [dependencies.serenity]
 features = ["framework", "standard_framework", "rustls_backend"]
