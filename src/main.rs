@@ -5,6 +5,7 @@ use std::{collections::HashSet, env, process::exit};
 
 use dotenv::dotenv;
 use log::{error, info};
+use redis::Client as RedisClient;
 use serenity::{
     framework::standard::{
         help_commands,
@@ -23,26 +24,41 @@ use serenity::{
 mod commands;
 mod util;
 
-use commands::tables::*;
+use commands::{mentors::*, tables::*};
 
+// Discord events handler
 struct Handler;
 
 impl EventHandler for Handler {
+    // Triggers when the client is ready & connected
     fn ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.name);
         ctx.set_activity(Activity::playing("~help"))
     }
 
+    // Triggers when a connection is resumed
     fn resume(&self, ctx: Context, _: ResumedEvent) {
         info!("Successfully reconnected");
         ctx.set_activity(Activity::playing("~help"));
     }
 }
 
+struct RedisConnection;
+
+impl TypeMapKey for RedisConnection {
+    type Value = RedisClient;
+}
+
 #[group]
 #[commands(join, leave)]
 #[description = "Manage your participation in a team"]
 struct Tables;
+
+#[group]
+#[commands(request)]
+#[description = "Commands to interact with mentors"]
+#[prefixes("m", "mentors")]
+struct Mentors;
 
 fn main() {
     // Load configuration from a .env file
@@ -59,11 +75,23 @@ fn main() {
         Err(_) => util::fail("No bot token present! Exiting..."),
     };
 
+    // Connect to redis
+    let redis = match RedisClient::open(util::REDIS_URL.clone()) {
+        Ok(c) => c,
+        Err(e) => util::fail(&format!("Failed to connect to redis: {}", e)),
+    };
+
     // Create client
     let mut client = match Client::new(&token, Handler) {
         Ok(client) => client,
         Err(_) => util::fail("Failed to create the client"),
     };
+
+    // Add redis store to client
+    {
+        let mut data = client.data.write();
+        data.insert::<RedisConnection>(redis);
+    }
 
     // Retrieve the owners and id
     let (owners, bot_id) = match client.cache_and_http.http.get_current_application_info() {
@@ -82,7 +110,7 @@ fn main() {
                 c.with_whitespace(true)
                     .on_mention(Some(bot_id))
                     .prefix("~")
-                    .delimiter(" ")
+                    .delimiters(vec![", ", ","])
                     .ignore_bots(true)
                     .owners(owners)
             })
@@ -137,7 +165,8 @@ fn main() {
             })
             // Register command handlers
             .help(&DISPLAY_HELP)
-            .group(&TABLES_GROUP),
+            .group(&TABLES_GROUP)
+            .group(&MENTORS_GROUP),
     );
 
     // Attempt to start the client
@@ -148,6 +177,7 @@ fn main() {
 }
 
 #[help]
+#[individual_command_tip = "All command arguments are separated by a `,`.\nTo get help with an individual command, pass its name as an argument to this command."]
 #[command_not_found_text = "Command not found: `{}`"]
 #[max_levenshtein_distance(3)]
 #[indention_prefix = "-"]

@@ -34,6 +34,10 @@ const COLORS: [Colour; 25] = [
 
 // Retrieve ids from environment
 lazy_static! {
+    pub static ref REDIS_URL: String = match env::var("REDIS_URL") {
+        Ok(url) => url,
+        Err(_) => fail("No redis connection url present! Exiting..."),
+    };
     pub static ref TABLES_CATEGORY_ID: u64 = parse_id_from_environment("TABLES_CATEGORY_ID");
     pub static ref EVERYONE_ROLE_ID: u64 = parse_id_from_environment("EVERYONE_ROLE_ID");
     pub static ref TEAMLESS_ROLE_ID: u64 = parse_id_from_environment("TEAMLESS_ROLE_ID");
