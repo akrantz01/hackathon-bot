@@ -41,6 +41,7 @@ impl EventHandler for Handler {
 
 #[group]
 #[commands(join, leave)]
+#[description = "Manage your participation in a team"]
 struct Tables;
 
 fn main() {

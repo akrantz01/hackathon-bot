@@ -14,8 +14,6 @@ use crate::util::{
 #[usage = "<table_number>"]
 #[example = "1"]
 #[num_args(1)]
-#[allowed_roles("Teamless")]
-#[only_in("guilds")]
 pub fn join(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
     // Parse team number from args
     let team_num = match args.single::<i64>() {
@@ -148,7 +146,6 @@ pub fn join(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
 #[usage = "<table_number>"]
 #[example = "1"]
 #[num_args(1)]
-#[only_in("guilds")]
 pub fn leave(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
     // Parse team number from args
     let team_num = match args.single::<i64>() {
