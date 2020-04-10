@@ -1148,7 +1148,9 @@ version = "0.1.0"
 dependencies = [
  "dotenv",
  "env_logger",
+ "lazy_static",
  "log",
+ "rand",
  "serenity",
 ]
 
