@@ -13,6 +13,7 @@ use serenity::{
     },
     model::{
         channel::Message,
+        event::ResumedEvent,
         gateway::{Activity, Ready},
         id::UserId,
     },
@@ -30,6 +31,11 @@ impl EventHandler for Handler {
     fn ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.name);
         ctx.set_activity(Activity::playing("~help"))
+    }
+
+    fn resume(&self, ctx: Context, _: ResumedEvent) {
+        info!("Successfully reconnected");
+        ctx.set_activity(Activity::playing("~help"));
     }
 }
 
