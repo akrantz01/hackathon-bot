@@ -36,8 +36,17 @@ pub fn join(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
     };
 
     // Check if current user part of team
-    if !msg.author.has_role(&ctx.http, msg.guild_id.unwrap(), *TEAMLESS_ROLE_ID)? {
-        msg.channel_id.say(&ctx.http, MessageBuilder::new().mention(&msg.author).push(" You're already part of a team!").build())?;
+    if !msg
+        .author
+        .has_role(&ctx.http, msg.guild_id.unwrap(), *TEAMLESS_ROLE_ID)?
+    {
+        msg.channel_id.say(
+            &ctx.http,
+            MessageBuilder::new()
+                .mention(&msg.author)
+                .push(" You're already part of a team!")
+                .build(),
+        )?;
         return Ok(());
     }
 
@@ -125,6 +134,87 @@ pub fn join(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
             .push("Successfully added ")
             .mention(&msg.author)
             .push(" to ")
+            .push_mono(format!("Table {}", team_num))
+            .push(".")
+            .build(),
+    )?;
+
+    Ok(())
+}
+
+#[command]
+#[help_available]
+#[description = "Remove yourself from the table you're in"]
+#[usage = "<table_number>"]
+#[example = "1"]
+#[num_args(1)]
+#[only_in("guilds")]
+pub fn leave(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
+    // Parse team number from args
+    let team_num = match args.single::<i64>() {
+        Ok(num) => num,
+        Err(ArgError::Eos) => {
+            msg.channel_id
+                .say(&ctx.http, "Argument <team_number> not satisfied")?;
+            return Ok(());
+        }
+        Err(ArgError::Parse(why)) => {
+            msg.channel_id.say(
+                &ctx.http,
+                format!("Failed parsing argument <team_number>: {}", why),
+            )?;
+            return Ok(());
+        }
+        Err(e) => return Err(CommandError(e.to_string())),
+    };
+
+    // Check user has a team in general
+    if msg
+        .author
+        .has_role(&ctx.http, msg.guild_id.unwrap(), *TEAMLESS_ROLE_ID)?
+    {
+        msg.channel_id.say(
+            &ctx.http,
+            MessageBuilder::new()
+                .mention(&msg.author)
+                .push(" You're not part of a team!")
+                .build(),
+        )?;
+        return Ok(());
+    }
+
+    // Retrieve guild
+    let guild = msg.guild(&ctx.cache).unwrap();
+
+    // Retrieve role by name
+    let role = match guild.read().role_by_name(&format!("Table {}", team_num)) {
+        Some(role) => role.clone(),
+        None => {
+            msg.channel_id.say(
+                &ctx.http,
+                MessageBuilder::new()
+                    .mention(&msg.author)
+                    .push(" You're not part of 'Table ")
+                    .push(team_num)
+                    .push("'!")
+                    .build(),
+            )?;
+            return Ok(());
+        }
+    };
+
+    // Remove user from role and add teamless role
+    let mut member = guild.read().member(&ctx.http, msg.author.id)?;
+    member.remove_role(&ctx.http, role.id)?;
+    member.add_role(&ctx.http, *TEAMLESS_ROLE_ID)?;
+
+    // Send confirmation message
+    msg.channel_id.say(
+        &ctx.http,
+        MessageBuilder::new()
+            .push("Successfully removed ")
+            .mention(&msg.author)
+            .push(" from ")
             .push_mono(format!("Table {}", team_num))
             .push(".")
             .build(),

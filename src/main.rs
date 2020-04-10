@@ -40,7 +40,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(join)]
+#[commands(join, leave)]
 struct Tables;
 
 fn main() {
