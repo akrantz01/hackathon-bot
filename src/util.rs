@@ -1,7 +1,12 @@
 use log::error;
-use std::{env, process::exit};
+use std::{env, iter, process::exit};
 
-use rand::seq::SliceRandom;
+use rand::{
+    distributions::Alphanumeric,
+    Rng,
+    seq::SliceRandom,
+    thread_rng,
+};
 use serenity::utils::Colour;
 
 const COLORS: [Colour; 25] = [
@@ -70,4 +75,14 @@ pub fn fail(prompt: &'_ str) -> ! {
 /// Get a random color
 pub fn random_color() -> &'static Colour {
     COLORS.choose(&mut rand::thread_rng()).unwrap()
+}
+
+/// Get a random string
+pub fn random_string(len: usize) -> String {
+    let mut rng = thread_rng();
+    iter::repeat(())
+        .map(|()| rng
+            .sample(Alphanumeric))
+        .take(len)
+        .collect()
 }

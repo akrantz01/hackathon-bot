@@ -5,7 +5,6 @@ use std::{collections::HashSet, env, process::exit};
 
 use dotenv::dotenv;
 use log::{error, info};
-use redis::Client as RedisClient;
 use serenity::{
     framework::standard::{
         help_commands,
@@ -22,6 +21,7 @@ use serenity::{
 };
 
 mod commands;
+mod data;
 mod util;
 
 use commands::{mentors::*, tables::*};
@@ -43,19 +43,13 @@ impl EventHandler for Handler {
     }
 }
 
-struct RedisConnection;
-
-impl TypeMapKey for RedisConnection {
-    type Value = RedisClient;
-}
-
 #[group]
 #[commands(join, leave)]
 #[description = "Manage your participation in a team"]
 struct Tables;
 
 #[group]
-#[commands(request)]
+#[commands(request, list, complete)]
 #[description = "Commands to interact with mentors"]
 #[prefixes("m", "mentors")]
 struct Mentors;
@@ -75,23 +69,14 @@ fn main() {
         Err(_) => util::fail("No bot token present! Exiting..."),
     };
 
-    // Connect to redis
-    let redis = match RedisClient::open(util::REDIS_URL.clone()) {
-        Ok(c) => c,
-        Err(e) => util::fail(&format!("Failed to connect to redis: {}", e)),
-    };
-
     // Create client
     let mut client = match Client::new(&token, Handler) {
         Ok(client) => client,
         Err(_) => util::fail("Failed to create the client"),
     };
 
-    // Add redis store to client
-    {
-        let mut data = client.data.write();
-        data.insert::<RedisConnection>(redis);
-    }
+    // Connect to redis
+    data::init(&client);
 
     // Retrieve the owners and id
     let (owners, bot_id) = match client.cache_and_http.http.get_current_application_info() {
@@ -124,6 +109,15 @@ fn main() {
             })
             // Log errors if occurred
             .after(|ctx, msg, command_name, error| {
+                // This is currently a work-around to fix some API weirdness
+                if command_name == "join" && error.is_err() {
+                    match msg.channel_id.say(&ctx.http, "Please run `~join <team_num>` again to confirm creation of team") {
+                        Ok(_) => {},
+                        Err(e) => error!("Failed to send message: {}", e)
+                    };
+                    return;
+                }
+
                 if let Err(e) = error {
                     error!(
                         "Command '{}' failed for user '{}' with error: {:?}",

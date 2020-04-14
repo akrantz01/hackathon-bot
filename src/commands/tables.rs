@@ -1,3 +1,4 @@
+use redis::Commands;
 use serenity::framework::standard::{macros::command, ArgError, Args, CommandError, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
@@ -7,6 +8,7 @@ use crate::util::{
     random_color, EVERYONE_ROLE_ID, MANAGER_ROLE_ID, MENTOR_ROLE_ID, TABLES_CATEGORY_ID,
     TEAMLESS_ROLE_ID,
 };
+use crate::data::get_connection;
 
 #[command]
 #[help_available]
@@ -125,6 +127,10 @@ pub fn join(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
         })?;
     }
 
+    // Retrieve redis connection to persistently cache user's team
+    let mut client = get_connection(&ctx.data)?;
+    client.hset("tables", msg.author.id.0, format!("Table {}", team_num))?;
+
     // Send confirmation message
     msg.channel_id.say(
         &ctx.http,
@@ -204,6 +210,10 @@ pub fn leave(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult 
     let mut member = guild.read().member(&ctx.http, msg.author.id)?;
     member.remove_role(&ctx.http, role.id)?;
     member.add_role(&ctx.http, *TEAMLESS_ROLE_ID)?;
+
+    // Remove user's team from redis cache
+    let mut client = get_connection(&ctx.data)?;
+    client.hdel("tables", msg.author.id.0)?;
 
     // Send confirmation message
     msg.channel_id.say(
