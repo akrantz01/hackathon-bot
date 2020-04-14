@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::{collections::HashSet, env, process::exit};
+use std::{collections::HashSet, process::exit};
 
 use dotenv::dotenv;
 use log::{error, info};
@@ -63,14 +63,8 @@ fn main() {
     // Set RUST_LOG to the minimum level to log at
     env_logger::init();
 
-    // Retrieve token
-    let token = match env::var("DISCORD_TOKEN") {
-        Ok(token) => token,
-        Err(_) => util::fail("No bot token present! Exiting..."),
-    };
-
     // Create client
-    let mut client = match Client::new(&token, Handler) {
+    let mut client = match Client::new(util::DISCORD_TOKEN.clone(), Handler) {
         Ok(client) => client,
         Err(_) => util::fail("Failed to create the client"),
     };
