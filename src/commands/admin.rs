@@ -4,7 +4,7 @@ use serenity::prelude::*;
 use crate::ShardManagerContainer;
 
 #[command]
-#[help_available]
+#[help_available(false)]
 #[description = "Shutdown the bot"]
 #[owners_only]
 #[num_args(0)]

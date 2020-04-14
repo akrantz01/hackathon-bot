@@ -64,6 +64,7 @@ struct Mentors;
 
 #[group]
 #[commands(shutdown)]
+#[help_available(false)]
 #[description = "Admin only commands"]
 #[prefixes("a", "admin")]
 struct Admin;
