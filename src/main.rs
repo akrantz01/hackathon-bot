@@ -1,11 +1,12 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::{collections::HashSet, process::exit};
+use std::{collections::HashSet, process::exit, sync::Arc};
 
 use dotenv::dotenv;
 use log::{error, info};
 use serenity::{
+    client::bridge::gateway::ShardManager,
     framework::standard::{
         help_commands,
         macros::{group, help},
@@ -24,7 +25,7 @@ mod commands;
 mod data;
 mod util;
 
-use commands::{mentors::*, tables::*};
+use commands::{mentors::*, tables::*, admin::*};
 
 // Discord events handler
 struct Handler;
@@ -43,6 +44,13 @@ impl EventHandler for Handler {
     }
 }
 
+// Allow shutting down from command
+struct ShardManagerContainer;
+
+impl TypeMapKey for ShardManagerContainer {
+    type Value = Arc<Mutex<ShardManager>>;
+}
+
 #[group]
 #[commands(join, leave)]
 #[description = "Manage your participation in a team"]
@@ -51,8 +59,14 @@ struct Tables;
 #[group]
 #[commands(request, list, complete)]
 #[description = "Commands to interact with mentors"]
-#[prefixes("m", "mentors")]
+#[prefixes("m", "mentor")]
 struct Mentors;
+
+#[group]
+#[commands(shutdown)]
+#[description = "Admin only commands"]
+#[prefixes("a", "admin")]
+struct Admin;
 
 fn main() {
     // Load configuration from a .env file
@@ -71,6 +85,12 @@ fn main() {
 
     // Connect to redis
     data::init(&client);
+
+    // Attach shard manager
+    {
+        let mut data = client.data.write();
+        data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
+    }
 
     // Retrieve the owners and id
     let (owners, bot_id) = match client.cache_and_http.http.get_current_application_info() {
@@ -154,7 +174,8 @@ fn main() {
             // Register command handlers
             .help(&DISPLAY_HELP)
             .group(&TABLES_GROUP)
-            .group(&MENTORS_GROUP),
+            .group(&MENTORS_GROUP)
+            .group(&ADMIN_GROUP),
     );
 
     // Attempt to start the client
