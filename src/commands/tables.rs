@@ -4,11 +4,11 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::utils::MessageBuilder;
 
+use crate::data::get_connection;
 use crate::util::{
     random_color, EVERYONE_ROLE_ID, MANAGER_ROLE_ID, MENTOR_ROLE_ID, TABLES_CATEGORY_ID,
     TEAMLESS_ROLE_ID,
 };
-use crate::data::get_connection;
 
 #[command]
 #[help_available]

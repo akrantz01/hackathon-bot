@@ -1,14 +1,10 @@
-use redis::{Client, Commands, RedisResult, Connection};
+use crate::util::random_string;
+use redis::{Client, Commands, Connection, RedisResult};
 use serenity::{
+    prelude::{RwLock, ShareMap, TypeMapKey},
     Client as Serenity,
-    prelude::{
-        RwLock,
-        ShareMap,
-        TypeMapKey
-    }
 };
 use std::sync::Arc;
-use crate::util::random_string;
 
 struct RedisConnection;
 
@@ -31,15 +27,20 @@ pub fn init(serenity: &Serenity) {
 
 // Get a connection to Redis
 pub fn get_connection(data: &Arc<RwLock<ShareMap>>) -> RedisResult<Connection> {
-    data
-        .read()
+    data.read()
         .get::<RedisConnection>()
         .expect("Expected RedisConnection in ShareMap.")
         .get_connection()
 }
 
 // Persist a help request in redis
-pub fn add_help_request(client: &mut Connection, description: String, link: String, table: String, at: i64) -> RedisResult<usize> {
+pub fn add_help_request(
+    client: &mut Connection,
+    description: String,
+    link: String,
+    table: String,
+    at: i64,
+) -> RedisResult<usize> {
     let request_key = format!("help_request:{}", random_string(8));
 
     client.lpush(&request_key, at)?;
@@ -48,7 +49,10 @@ pub fn add_help_request(client: &mut Connection, description: String, link: Stri
     client.lpush(&request_key, description)
 }
 
-pub fn get_help_request(client: &mut Connection, key: &String) -> RedisResult<(String, String, String, i64)> {
+pub fn get_help_request(
+    client: &mut Connection,
+    key: &String,
+) -> RedisResult<(String, String, String, i64)> {
     let data: (String, String, String, i64) = client.lrange(key, 0, 4)?;
     Ok(data)
 }

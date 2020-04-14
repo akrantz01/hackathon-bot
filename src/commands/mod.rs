@@ -1,3 +1,4 @@
-pub mod mentors;
-pub mod tables;
 pub mod admin;
+pub mod mentors;
+pub mod moderation;
+pub mod tables;

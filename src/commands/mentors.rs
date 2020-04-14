@@ -6,8 +6,8 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::utils::MessageBuilder;
 
+use crate::data::{add_help_request, get_connection, get_help_request};
 use crate::util::MENTOR_ROLE_ID;
-use crate::data::{get_connection, add_help_request, get_help_request};
 
 #[command]
 #[help_available]
@@ -55,14 +55,20 @@ pub fn request(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResul
     // Retrieve team from database
     let team = match client.hget::<&str, u64, Option<String>>("tables", msg.author.id.0)? {
         Some(team) => team,
-        None => format!("{}#{}", &msg.author.name, &msg.author.discriminator)
+        None => format!("{}#{}", &msg.author.name, &msg.author.discriminator),
     };
 
     // Get the current time
     let current_time: DateTime<Local> = Local::now();
 
     // Set values
-    add_help_request(&mut client, description, link, team, current_time.timestamp_millis())?;
+    add_help_request(
+        &mut client,
+        description,
+        link,
+        team,
+        current_time.timestamp_millis(),
+    )?;
 
     // Send confirmation
     msg.channel_id.say(
@@ -166,14 +172,16 @@ pub fn complete(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResu
     let id = match args.single::<String>() {
         Ok(id) => id,
         Err(ArgError::Eos) => {
-            msg.channel_id.say(&ctx.http, "Argument <id> not satisfied")?;
+            msg.channel_id
+                .say(&ctx.http, "Argument <id> not satisfied")?;
             return Ok(());
         }
         Err(ArgError::Parse(why)) => {
-            msg.channel_id.say(&ctx.http, format!("Failed parsing argument <id>: {}", why))?;
+            msg.channel_id
+                .say(&ctx.http, format!("Failed parsing argument <id>: {}", why))?;
             return Ok(());
         }
-        Err(e) => return Err(CommandError(e.to_string()))
+        Err(e) => return Err(CommandError(e.to_string())),
     };
 
     // Retrieve connection and delete
@@ -181,7 +189,15 @@ pub fn complete(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResu
     client.del(format!("help_request:{}", &id))?;
 
     // Send confirmation
-    msg.channel_id.say(&ctx.http, MessageBuilder::new().push("Deleted help request ").push(&id).push(" for ").mention(&msg.author).push("."))?;
+    msg.channel_id.say(
+        &ctx.http,
+        MessageBuilder::new()
+            .push("Deleted help request ")
+            .push(&id)
+            .push(" for ")
+            .mention(&msg.author)
+            .push("."),
+    )?;
 
     Ok(())
 }

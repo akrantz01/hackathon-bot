@@ -1,12 +1,7 @@
 use log::error;
 use std::{env, iter, process::exit};
 
-use rand::{
-    distributions::Alphanumeric,
-    Rng,
-    seq::SliceRandom,
-    thread_rng,
-};
+use rand::{distributions::Alphanumeric, seq::SliceRandom, thread_rng, Rng};
 use serenity::utils::Colour;
 
 const COLORS: [Colour; 25] = [
@@ -42,6 +37,7 @@ lazy_static! {
     pub static ref DISCORD_TOKEN: String = parse_from_environment::<String>("DISCORD_TOKEN");
     pub static ref REDIS_URL: String = parse_from_environment::<String>("REDIS_URL");
     pub static ref TABLES_CATEGORY_ID: u64 = parse_from_environment::<u64>("TABLES_CATEGORY_ID");
+    pub static ref REPORTS_CHANNEL_ID: u64 = parse_from_environment::<u64>("REPORTS_CHANNEL_ID");
     pub static ref EVERYONE_ROLE_ID: u64 = parse_from_environment::<u64>("EVERYONE_ROLE_ID");
     pub static ref TEAMLESS_ROLE_ID: u64 = parse_from_environment::<u64>("TEAMLESS_ROLE_ID");
     pub static ref MENTOR_ROLE_ID: u64 = parse_from_environment::<u64>("MENTOR_ROLE_ID");
@@ -57,7 +53,11 @@ fn parse_from_environment<T: std::str::FromStr>(var: &'static str) -> T {
 
     match raw.parse::<T>() {
         Ok(parsed) => parsed,
-        Err(_) => fail(&format!("Variable '{}' must be of type '{}'! Exiting...", var, std::any::type_name::<T>()))
+        Err(_) => fail(&format!(
+            "Variable '{}' must be of type '{}'! Exiting...",
+            var,
+            std::any::type_name::<T>()
+        )),
     }
 }
 
@@ -76,8 +76,7 @@ pub fn random_color() -> &'static Colour {
 pub fn random_string(len: usize) -> String {
     let mut rng = thread_rng();
     iter::repeat(())
-        .map(|()| rng
-            .sample(Alphanumeric))
+        .map(|()| rng.sample(Alphanumeric))
         .take(len)
         .collect()
 }

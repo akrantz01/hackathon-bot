@@ -25,7 +25,7 @@ mod commands;
 mod data;
 mod util;
 
-use commands::{mentors::*, tables::*, admin::*};
+use commands::{admin::*, mentors::*, moderation::*, tables::*};
 
 // Discord events handler
 struct Handler;
@@ -68,6 +68,11 @@ struct Mentors;
 #[description = "Admin only commands"]
 #[prefixes("a", "admin")]
 struct Admin;
+
+#[group]
+#[commands(report, emergency)]
+#[description = "Different levels for reporting a message"]
+struct Moderation;
 
 fn main() {
     // Load configuration from a .env file
@@ -126,9 +131,12 @@ fn main() {
             .after(|ctx, msg, command_name, error| {
                 // This is currently a work-around to fix some API weirdness
                 if command_name == "join" && error.is_err() {
-                    match msg.channel_id.say(&ctx.http, "Please run `~join <team_num>` again to confirm creation of team") {
-                        Ok(_) => {},
-                        Err(e) => error!("Failed to send message: {}", e)
+                    match msg.channel_id.say(
+                        &ctx.http,
+                        "Please run `~join <team_num>` again to confirm creation of team",
+                    ) {
+                        Ok(_) => {}
+                        Err(e) => error!("Failed to send message: {}", e),
                     };
                     return;
                 }
@@ -176,7 +184,8 @@ fn main() {
             .help(&DISPLAY_HELP)
             .group(&TABLES_GROUP)
             .group(&MENTORS_GROUP)
-            .group(&ADMIN_GROUP),
+            .group(&ADMIN_GROUP)
+            .group(&MODERATION_GROUP),
     );
 
     // Attempt to start the client
