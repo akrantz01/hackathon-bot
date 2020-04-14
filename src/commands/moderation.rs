@@ -47,6 +47,9 @@ pub fn report(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult
             .push(msg.channel_id.name(&ctx.cache).unwrap_or_default()),
     )?;
 
+    // Delete initial message
+    msg.delete(&ctx.http)?;
+
     Ok(())
 }
 
@@ -96,6 +99,9 @@ pub fn emergency(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandRes
             .push(message)
             .push("'"),
     )?;
+
+    // Delete initial message
+    msg.delete(&ctx.http)?;
 
     Ok(())
 }
