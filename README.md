@@ -27,10 +27,19 @@ All configuration is done through environment variables.
 The [`.env.example`](.env.example) can be used as reference.
 
 ### Heroku
-Coming soon...
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Custom
 1. Have a Redis instance running that is accessible by the project
 1. Build the Rust project with `cargo build --release`
 1. Copy it to your server
 1. Configure your `.env` file using [`.env.example`](.env.example) as reference
+
+## Contributing
+1. Fork the repo
+1. Make your changes
+1. Format with `rustfmt`
+1. Make a pull request
+
+## License
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT), which can be found in the [LICENSE.md](LICENSE.md) file.
