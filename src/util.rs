@@ -40,6 +40,7 @@ lazy_static! {
     pub static ref REPORTS_CHANNEL_ID: u64 = parse_from_environment::<u64>("REPORTS_CHANNEL_ID");
     pub static ref EVERYONE_ROLE_ID: u64 = parse_from_environment::<u64>("EVERYONE_ROLE_ID");
     pub static ref TEAMLESS_ROLE_ID: u64 = parse_from_environment::<u64>("TEAMLESS_ROLE_ID");
+    pub static ref BOT_ROLE_ID: u64 = parse_from_environment::<u64>("BOT_ROLE_ID");
     pub static ref MENTOR_ROLE_ID: u64 = parse_from_environment::<u64>("MENTOR_ROLE_ID");
     pub static ref MANAGER_ROLE_ID: u64 = parse_from_environment::<u64>("MANAGER_ROLE_ID");
 }

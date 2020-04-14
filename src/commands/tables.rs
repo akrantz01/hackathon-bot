@@ -6,8 +6,8 @@ use serenity::utils::MessageBuilder;
 
 use crate::data::get_connection;
 use crate::util::{
-    random_color, EVERYONE_ROLE_ID, MANAGER_ROLE_ID, MENTOR_ROLE_ID, TABLES_CATEGORY_ID,
-    TEAMLESS_ROLE_ID,
+    random_color, BOT_ROLE_ID, EVERYONE_ROLE_ID, MANAGER_ROLE_ID, MENTOR_ROLE_ID,
+    TABLES_CATEGORY_ID, TEAMLESS_ROLE_ID,
 };
 
 #[command]
@@ -121,6 +121,11 @@ pub fn join(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
                             | Permissions::READ_MESSAGE_HISTORY
                             | Permissions::SEND_MESSAGES
                             | Permissions::MANAGE_MESSAGES,
+                        deny: Permissions::empty(),
+                    },
+                    PermissionOverwrite {
+                        kind: PermissionOverwriteType::Role(RoleId(*BOT_ROLE_ID)),
+                        allow: Permissions::READ_MESSAGES | Permissions::READ_MESSAGE_HISTORY,
                         deny: Permissions::empty(),
                     },
                 ])
