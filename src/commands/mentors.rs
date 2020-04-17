@@ -114,7 +114,7 @@ pub fn list(ctx: &mut Context, msg: &Message, _: Args) -> CommandResult {
     // Send table of help requests
     msg.channel_id.send_message(&ctx.http, |m| {
         m.embed(|e| {
-            e.description("Here is a list of all the unclaimed help requests. Use `~mentors claim <id>` to claim a help request.");
+            e.description("Here is a list of all the uncompleted help requests:");
 
             // Format list
             for key in requests {
