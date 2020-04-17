@@ -37,6 +37,7 @@ lazy_static! {
     pub static ref DISCORD_TOKEN: String = parse_from_environment::<String>("DISCORD_TOKEN");
     pub static ref REDIS_URL: String = parse_from_environment::<String>("REDIS_URL");
     pub static ref TABLES_CATEGORY_ID: u64 = parse_from_environment::<u64>("TABLES_CATEGORY_ID");
+    pub static ref MENTORS_CHANNEL_ID: u64 = parse_from_environment::<u64>("MENTORS_CHANNEL_ID");
     pub static ref REPORTS_CHANNEL_ID: u64 = parse_from_environment::<u64>("REPORTS_CHANNEL_ID");
     pub static ref EVERYONE_ROLE_ID: u64 = parse_from_environment::<u64>("EVERYONE_ROLE_ID");
     pub static ref TEAMLESS_ROLE_ID: u64 = parse_from_environment::<u64>("TEAMLESS_ROLE_ID");

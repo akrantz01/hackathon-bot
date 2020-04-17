@@ -17,6 +17,10 @@
       "required": true,
       "description": "The ID of the channel category where you want the team channels to be put."
     },
+    "MENTORS_CHANNEL_ID": {
+      "required": true,
+      "description": "The ID of the channel where you want all mentor notifications to be send. This should be a channel accessible by mentors and administrators"
+    },
     "REPORTS_CHANNEL_ID": {
       "required": true,
       "description": "The ID of the channel where you want all report notifications to be sent. This should be a channel only accessible by the administrator and moderators"

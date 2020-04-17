@@ -7,7 +7,7 @@ use serenity::prelude::*;
 use serenity::utils::MessageBuilder;
 
 use crate::data::{add_help_request, get_connection, get_help_request};
-use crate::util::MENTOR_ROLE_ID;
+use crate::util::{MENTORS_CHANNEL_ID, MENTOR_ROLE_ID};
 
 #[command]
 #[help_available]
@@ -66,7 +66,7 @@ pub fn request(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResul
         &mut client,
         description,
         link,
-        team,
+        team.clone(),
         current_time.timestamp_millis(),
     )?;
 
@@ -74,9 +74,29 @@ pub fn request(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResul
     msg.channel_id.say(
         &ctx.http,
         MessageBuilder::new()
-            .push("Help requested for ")
+            .push("Successfully requested help for ")
             .mention(&msg.author)
             .push("."),
+    )?;
+
+    // Retrieve channel
+    let channel = ctx
+        .http
+        .get_channel(MENTORS_CHANNEL_ID.clone())
+        .expect("Invalid channel ID");
+
+    // Send notification to mentors
+    channel.id().say(
+        &ctx.http,
+        MessageBuilder::new()
+            .push("New help request from ")
+            .mention(&msg.author)
+            .push(if team.contains("Table ") {
+                format!(" in {}", team)
+            } else {
+                String::new()
+            })
+            .build(),
     )?;
 
     Ok(())
@@ -134,8 +154,14 @@ pub fn list(ctx: &mut Context, msg: &Message, _: Args) -> CommandResult {
 
                 e.field(
                     key.get(13..21).unwrap(),
-                    format!("**Timestamp**: {}\n**Description**: {}\n**Link**: {}\n**For**: {}", Local.timestamp(ts/1000, 0).to_string(), desc, link, table),
-                    true
+                    format!(
+                        "**Timestamp**: {}\n**Description**: {}\n**Link**: {}\n**For**: {}",
+                        Local.timestamp(ts / 1000, 0).to_string(),
+                        desc,
+                        link,
+                        table
+                    ),
+                    true,
                 );
             }
 

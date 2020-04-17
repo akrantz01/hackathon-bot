@@ -47,8 +47,12 @@ impl EventHandler for Handler {
     // Triggers when a user joins the server
     fn guild_member_addition(&self, ctx: Context, _: GuildId, mut member: Member) {
         match member.add_role(ctx.http, RoleId(util::TEAMLESS_ROLE_ID.clone())) {
-            Ok(_) => {},
-            Err(e) => error!("Failed to add teamless role to new user '{}': {}", member.user.read().name, e)
+            Ok(_) => {}
+            Err(e) => error!(
+                "Failed to add teamless role to new user '{}': {}",
+                member.user.read().name,
+                e
+            ),
         };
     }
 }
