@@ -16,7 +16,8 @@ use serenity::{
         channel::Message,
         event::ResumedEvent,
         gateway::{Activity, Ready},
-        id::UserId,
+        guild::Member,
+        id::{GuildId, RoleId, UserId},
     },
     prelude::*,
 };
@@ -41,6 +42,14 @@ impl EventHandler for Handler {
     fn resume(&self, ctx: Context, _: ResumedEvent) {
         info!("Successfully reconnected");
         ctx.set_activity(Activity::playing("~help"));
+    }
+
+    // Triggers when a user joins the server
+    fn guild_member_addition(&self, ctx: Context, _: GuildId, mut member: Member) {
+        match member.add_role(ctx.http, RoleId(util::TEAMLESS_ROLE_ID.clone())) {
+            Ok(_) => {},
+            Err(e) => error!("Failed to add teamless role to new user '{}': {}", member.user.read().name, e)
+        };
     }
 }
 
